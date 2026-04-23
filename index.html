@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>স্মৃতির পাতা — উসমান হাদী</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Hind+Siliguri:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #060d08;
+    --bg2:      #0b1610;
+    --emerald:  #2ecc71;
+    --em-mid:   #1a9e52;
+    --em-deep:  #0f6b38;
+    --em-glow:  rgba(46,204,113,0.18);
+    --em-faint: rgba(46,204,113,0.06);
+    --gold:     #c9a84c;
+    --cream:    #eef7ef;
+    --muted:    rgba(238,247,239,0.55);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Hind Siliguri', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── GLOBAL BG TEXTURE ── */
+  body::before{
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(46,204,113,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(15,107,56,0.08) 0%, transparent 60%);
+    pointer-events:none;
+  }
+
+  /* subtle grid lines */
+  body::after{
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(46,204,113,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46,204,113,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+  }
+
+  main{ position:relative; z-index:2; }
+
+  /* ══════════════════════════════════
+     LOADER
+  ══════════════════════════════════ */
+  #loader{
+    position:fixed; inset:0; z-index:9999;
+    background: var(--bg);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    transition: opacity 1s ease;
+  }
+  #loader.fade-out{ opacity:0; pointer-events:none; }
+
+  /* particle stars */
+  .particle{
+    position:absolute;
+    border-radius:50%;
+    background: var(--emerald);
+    opacity:0;
+    animation: sparkle var(--dur) var(--delay) infinite;
+  }
+  @keyframes sparkle{
+    0%,100%{ opacity:0; transform:scale(0.3); }
+    50%{ opacity:0.7; transform:scale(1); }
+  }
+
+  .loader-bismillah{
+    font-family:'Amiri', serif;
+    font-size:2rem;
+    color: var(--emerald);
+    text-shadow: 0 0 30px var(--emerald);
+    margin-bottom:1.5rem;
+    opacity:0;
+    animation: fadeIn 1s 0.2s forwards;
+    direction:rtl;
+  }
+  @keyframes fadeIn{ to{opacity:1;} }
+
+  .loader-name-wrap{
+    text-align:center;
+    margin-bottom:2rem;
+  }
+  .loader-name-ar{
+    font-family:'Amiri', serif;
+    font-size:1.4rem;
+    color: var(--emerald);
+    direction:rtl;
+    opacity:0;
+    animation: fadeIn 0.8s 0.6s forwards;
+  }
+  .loader-name-bn{
+    font-family:'Dancing Script', cursive;
+    font-size:2.2rem;
+    color: var(--gold);
+    opacity:0;
+    animation: fadeIn 0.8s 0.9s forwards;
+    text-shadow: 0 0 20px rgba(201,168,76,0.5);
+  }
+
+  .loader-steps{
+    display:flex; flex-direction:column; gap:0.5rem;
+    align-items:flex-start;
+    margin-bottom:1.5rem;
+  }
+  .l-step{
+    display:flex; align-items:center; gap:0.8rem;
+    font-size:0.82rem; color:var(--muted);
+    opacity:0; transform:translateX(-15px);
+    transition: all 0.5s ease;
+  }
+  .l-step.show{ opacity:1; transform:translateX(0); }
+  .l-step .ldot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--em-mid);
+    box-shadow:0 0 8px var(--emerald);
+    flex-shrink:0;
+    transition: background 0.3s;
+  }
+  .l-step.done .ldot{ background:#4ade80; }
+
+  .loader-bar-wrap{
+    width:220px; height:2px;
+    background: rgba(46,204,113,0.1);
+    border-radius:99px; overflow:hidden;
+    margin-bottom:1.5rem;
+  }
+  .loader-bar{
+    height:100%;
+    background: linear-gradient(90deg, var(--em-deep), var(--emerald));
+    width:0%;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 12px var(--emerald);
+  }
+
+  .loader-footer{
+    font-size:0.72rem; color:rgba(238,247,239,0.25);
+    letter-spacing:0.1em;
+    opacity:0;
+    animation: fadeIn 1s 1.2s forwards;
+  }
+
+  /* ══════════════════════════════════
+     BISMILLAH HERO
+  ══════════════════════════════════ */
+  #bismillah-section{
+    padding:4rem 1.5rem 2rem;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .bismillah-glow-ring{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:320px; height:320px;
+    border-radius:50%;
+    background: radial-gradient(circle, rgba(46,204,113,0.1) 0%, transparent 70%);
+    animation: breathe 5s infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ transform:translate(-50%,-50%) scale(1); opacity:0.7; }
+    50%{ transform:translate(-50%,-50%) scale(1.08); opacity:1; }
+  }
+
+  .bismillah-text{
+    font-family:'Amiri', serif;
+    font-size:clamp(2.2rem, 8vw, 3.5rem);
+    color: var(--emerald);
+    direction:rtl;
+    line-height:1.4;
+    text-shadow:
+      0 0 40px rgba(46,204,113,0.6),
+      0 0 80px rgba(46,204,113,0.3);
+    position:relative; z-index:2;
+    opacity:0;
+    animation: revealBism 1.2s 3.8s forwards;
+  }
+  @keyframes revealBism{
+    from{ opacity:0; transform:translateY(-10px) scale(0.96); }
+    to  { opacity:1; transform:translateY(0)      scale(1); }
+  }
+
+  .bismillah-deco{
+    display:flex; align-items:center; justify-content:center;
+    gap:1rem; margin-top:0.8rem;
+    opacity:0;
+    animation: fadeIn 1s 4.2s forwards;
+  }
+  .bismillah-line{
+    flex:1; max-width:80px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--em-mid));
+  }
+  .bismillah-line.right{
+    background: linear-gradient(270deg, transparent, var(--em-mid));
+  }
+  .bismillah-center{ font-size:0.7rem; color:var(--em-mid); letter-spacing:0.2em; }
+
+  /* ══════════════════════════════════
+     HERO
+  ══════════════════════════════════ */
+  #hero{
+    padding: 2rem 1.5rem 4rem;
+    text-align:center;
+    max-width:480px; margin:0 auto;
+    opacity:0;
+    animation: fadeUp 1s 4.5s forwards;
+  }
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(24px); }
+    to  { opacity:1; transform:translateY(0); }
+  }
+
+  .hero-photo-frame{
+    position:relative;
+    width:160px; height:160px;
+    margin:0 auto 1.8rem;
+  }
+  /* rotating dashed ring */
+  .hero-ring{
+    position:absolute; inset:-10px;
+    border-radius:50%;
+    border:1.5px dashed rgba(46,204,113,0.4);
+    animation:spin 12s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  /* corner jewels */
+  .ring-jewel{
+    position:absolute;
+    width:8px; height:8px; border-radius:50%;
+    background:var(--emerald);
+    box-shadow:0 0 10px var(--emerald);
+    top:-4px; left:50%; transform:translateX(-50%);
+  }
+  .hero-photo-placeholder{
+    width:160px; height:160px; border-radius:50%;
+    background: linear-gradient(135deg, #0a1f12, #0d2d18);
+    border:2px solid rgba(46,204,113,0.25);
+    display:flex; align-items:center; justify-content:center;
+    font-size:3.5rem;
+    box-shadow: 0 0 40px rgba(46,204,113,0.15), inset 0 0 30px rgba(46,204,113,0.05);
+  }
+  .hero-photo{
+    width:160px; height:160px; border-radius:50%;
+    object-fit:cover;
+    border:2px solid rgba(46,204,113,0.25);
+    box-shadow: 0 0 40px rgba(46,204,113,0.15);
+  }
+
+  .hero-name{
+    font-family:'Dancing Script', cursive;
+    font-size:2.6rem; font-weight:700;
+    color:var(--emerald);
+    text-shadow:0 0 30px rgba(46,204,113,0.4);
+    line-height:1.1;
+  }
+  .hero-name-ar{
+    font-family:'Amiri', serif;
+    font-size:1.1rem; direction:rtl;
+    color:var(--gold);
+    margin-top:0.3rem;
+    opacity:0.85;
+  }
+  .hero-parents{
+    margin-top:1.2rem;
+    padding:1rem 1.2rem;
+    background: rgba(46,204,113,0.05);
+    border:1px solid rgba(46,204,113,0.15);
+    border-radius:12px;
+    font-size:0.82rem;
+    line-height:1.9;
+    color:var(--muted);
+  }
+  .hero-parents strong{ color:var(--cream); font-weight:500; }
+
+  .hero-birth-card{
+    margin-top:1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem;
+    padding:0.8rem 1.2rem;
+    background: linear-gradient(135deg, rgba(46,204,113,0.07), rgba(15,107,56,0.07));
+    border:1px solid rgba(46,204,113,0.2);
+    border-radius:12px;
+    font-size:0.88rem;
+  }
+  .birth-icon{ font-size:1.4rem; }
+  .birth-info{ text-align:left; }
+  .birth-date{ color:var(--emerald); font-weight:600; }
+  .birth-time{ color:var(--muted); font-size:0.78rem; }
+
+  /* ══════════════════════════════════
+     SECTION COMMONS
+  ══════════════════════════════════ */
+  .section{ padding:3rem 1.5rem; max-width:480px; margin:0 auto; }
+
+  .sec-tag{
+    display:inline-flex; align-items:center; gap:0.5rem;
+    font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--em-mid); margin-bottom:0.6rem;
+  }
+  .sec-tag::before,.sec-tag::after{
+    content:''; display:block; width:20px; height:1px;
+    background:var(--em-mid); opacity:0.5;
+  }
+  .sec-title{
+    font-family:'Playfair Display', serif;
+    font-size:1.5rem; color:var(--cream);
+    margin-bottom:1.8rem; line-height:1.3;
+  }
+  .sec-title em{ color:var(--emerald); font-style:italic; }
+
+  /* ══════════════════════════════════
+     AGE COUNTER
+  ══════════════════════════════════ */
+  .age-main{
+    background: linear-gradient(135deg, rgba(46,204,113,0.08), rgba(15,107,56,0.05));
+    border:1px solid rgba(46,204,113,0.2);
+    border-radius:20px;
+    padding:2rem 1.5rem;
+    text-align:center;
+    margin-bottom:1rem;
+    position:relative; overflow:hidden;
+  }
+  .age-main::after{
+    content:'';
+    position:absolute;
+    top:-30px; right:-30px;
+    width:120px; height:120px; border-radius:50%;
+    background: radial-gradient(circle, rgba(46,204,113,0.1), transparent 70%);
+  }
+  .age-big-num{
+    font-family:'Playfair Display', serif;
+    font-size:5rem; font-weight:700; line-height:1;
+    color:var(--emerald);
+    text-shadow:0 0 30px rgba(46,204,113,0.5);
+  }
+  .age-big-label{
+    font-size:1rem; color:var(--muted);
+    margin-top:0.3rem;
+  }
+  .age-big-label span{ color:var(--cream); font-weight:500; }
+
+  .age-sub-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;
+  }
+  .age-sub-card{
+    background: rgba(46,204,113,0.05);
+    border:1px solid rgba(46,204,113,0.1);
+    border-radius:14px;
+    padding:1rem; text-align:center;
+  }
+  .age-sub-num{
+    font-family:'Playfair Display', serif;
+    font-size:2rem; color:var(--cream);
+    line-height:1;
+  }
+  .age-sub-label{ font-size:0.75rem; color:var(--muted); margin-top:0.2rem; }
+
+  /* ══════════════════════════════════
+     GALLERY
+  ══════════════════════════════════ */
+  .polaroid-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+  }
+  .polaroid{
+    background:#111;
+    border:1px solid rgba(46,204,113,0.1);
+    padding:0.5rem 0.5rem 1.6rem;
+    border-radius:3px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    transform:rotate(var(--r));
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor:pointer;
+  }
+  .polaroid:hover{
+    transform:rotate(0) scale(1.05) translateY(-4px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(46,204,113,0.1);
+    z-index:10; position:relative;
+  }
+  .polaroid:nth-child(1){ --r:-2.5deg; }
+  .polaroid:nth-child(2){ --r:2deg; }
+  .polaroid:nth-child(3){ --r:1.5deg; }
+  .polaroid:nth-child(4){ --r:-1.8deg; }
+  .pol-img{
+    width:100%; aspect-ratio:1;
+    border-radius:1px; overflow:hidden;
+    background: linear-gradient(135deg, #0d2014, #091a0f);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.5rem;
+  }
+  .pol-img img{ width:100%; height:100%; object-fit:cover; }
+  .pol-caption{
+    text-align:center; margin-top:0.5rem;
+    font-family:'Dancing Script', cursive;
+    font-size:0.8rem; color:#9ca;
+    line-height:1.3;
+  }
+
+  /* ══════════════════════════════════
+     CALENDAR
+  ══════════════════════════════════ */
+  .cal-wrap{
+    background: rgba(46,204,113,0.04);
+    border:1px solid rgba(46,204,113,0.12);
+    border-radius:20px; padding:1.5rem;
+  }
+  .cal-month-title{
+    font-family:'Playfair Display', serif;
+    font-size:1.3rem; color:var(--emerald);
+    text-align:center; margin-bottom:1rem;
+  }
+  .cal-grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
+  }
+  .cal-dh{
+    text-align:center; font-size:0.62rem;
+    color:rgba(238,247,239,0.3); padding:4px 0;
+    letter-spacing:0.05em;
+  }
+  .cal-d{
+    text-align:center; padding:6px 2px;
+    font-size:0.78rem; color:var(--muted);
+    border-radius:8px;
+  }
+  .cal-d.birthday-day{
+    background: linear-gradient(135deg, var(--em-deep), var(--em-mid));
+    color:#fff; font-weight:700;
+    box-shadow:0 0 15px rgba(46,204,113,0.5);
+    animation: glow-pulse 2.5s infinite;
+  }
+  @keyframes glow-pulse{
+    0%,100%{ box-shadow:0 0 12px rgba(46,204,113,0.4); }
+    50%{ box-shadow:0 0 22px rgba(46,204,113,0.7); }
+  }
+  .cal-d.today-day{
+    border:1px solid rgba(46,204,113,0.4);
+    color:var(--emerald);
+  }
+  .cal-d.empty{ opacity:0; }
+
+  /* ══════════════════════════════════
+     COUNTDOWN
+  ══════════════════════════════════ */
+  .countdown-wrap{
+    background: linear-gradient(135deg, rgba(46,204,113,0.06), rgba(15,107,56,0.04));
+    border:1px solid rgba(46,204,113,0.18);
+    border-radius:20px; padding:2rem 1.2rem;
+    text-align:center; position:relative; overflow:hidden;
+  }
+  .countdown-wrap::before{
+    content:'🎂';
+    position:absolute; font-size:8rem; opacity:0.04;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+  }
+  .cd-title{
+    font-family:'Dancing Script', cursive;
+    font-size:1.2rem; color:var(--emerald);
+    margin-bottom:1.5rem;
+  }
+  .cd-grid{ display:flex; justify-content:center; gap:0.6rem; align-items:center; }
+  .cd-block{ display:flex; flex-direction:column; align-items:center; }
+  .cd-num{
+    font-family:'Playfair Display', serif;
+    font-size:2.2rem; font-weight:700; color:var(--cream);
+    background: rgba(46,204,113,0.08);
+    border:1px solid rgba(46,204,113,0.15);
+    border-radius:10px; padding:0.4rem 0.7rem;
+    min-width:55px; text-align:center; line-height:1;
+  }
+  .cd-lbl{ font-size:0.65rem; color:var(--muted); margin-top:0.4rem; }
+  .cd-sep{ font-size:1.8rem; color:var(--em-mid); opacity:0.4; align-self:flex-start; padding-top:0.4rem; }
+
+  /* ══════════════════════════════════
+     DUA / MESSAGE
+  ══════════════════════════════════ */
+  .dua-card{
+    background: rgba(46,204,113,0.04);
+    border:1px solid rgba(46,204,113,0.12);
+    border-radius:20px; padding:2rem 1.5rem;
+    position:relative; overflow:hidden;
+  }
+  .dua-arabic{
+    font-family:'Amiri', serif;
+    font-size:1.3rem; direction:rtl;
+    text-align:center; color:var(--emerald);
+    opacity:0.9; margin-bottom:0.5rem;
+    line-height:1.8;
+  }
+  .dua-trans{
+    text-align:center; font-size:0.75rem;
+    color:var(--muted); margin-bottom:1.5rem;
+    font-style:italic;
+  }
+  .dua-divider{
+    height:1px; background:rgba(46,204,113,0.12); margin:1.2rem 0;
+  }
+  .msg-text{
+    font-family:'Dancing Script', cursive;
+    font-size:1.1rem; line-height:1.9;
+    color:rgba(238,247,239,0.82);
+  }
+  .msg-sign{ margin-top:1rem; font-size:0.82rem; color:var(--emerald); }
+
+  /* ══════════════════════════════════
+     DIVIDER
+  ══════════════════════════════════ */
+  .divider{
+    display:flex; align-items:center; gap:0.8rem;
+    max-width:300px; margin:0 auto;
+    padding:0 1.5rem; opacity:0.3;
+  }
+  .div-line{ flex:1; height:1px; background:var(--em-mid); }
+  .div-icon{ color:var(--em-mid); font-size:0.7rem; }
+
+  /* SCROLL REVEAL */
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity 0.7s, transform 0.7s; }
+  .reveal.visible{ opacity:1; transform:translateY(0); }
+
+  /* ══════════════════════════════════
+     FOOTER
+  ══════════════════════════════════ */
+  footer{
+    text-align:center; padding:2rem 1rem;
+    font-size:0.72rem; color:rgba(238,247,239,0.2);
+    border-top:1px solid rgba(46,204,113,0.07);
+  }
+  footer em{ color:var(--em-mid); font-style:normal; }
+
+  /* scroll hint */
+  .scroll-hint{
+    margin-top:2rem; display:flex; flex-direction:column;
+    align-items:center; gap:0.5rem;
+  }
+  .scroll-hint span{ font-size:0.72rem; color:rgba(238,247,239,0.3); letter-spacing:0.1em; }
+  .s-arrow{
+    width:20px; height:20px;
+    border-right:1.5px solid rgba(46,204,113,0.4);
+    border-bottom:1.5px solid rgba(46,204,113,0.4);
+    transform:rotate(45deg);
+    animation:abounce 1.5s infinite;
+  }
+  @keyframes abounce{
+    0%,100%{ transform:rotate(45deg) translateY(0); }
+    50%{ transform:rotate(45deg) translateY(4px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ LOADER ══ -->
+<div id="loader">
+  <div id="particles"></div>
+  <div style="text-align:center; position:relative; z-index:2;">
+    <div class="loader-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+    <div class="loader-name-wrap">
+      <div class="loader-name-ar">عثمان هادي</div>
+      <div class="loader-name-bn">উসমান হাদী</div>
+    </div>
+    <div class="loader-steps">
+      <div class="l-step" id="ls1"><div class="ldot"></div><span>বিসমিল্লাহ দিয়ে শুরু করছি...</span></div>
+      <div class="l-step" id="ls2"><div class="ldot"></div><span>স্মৃতিগুলো সাজাচ্ছি...</span></div>
+      <div class="l-step" id="ls3"><div class="ldot"></div><span>দিনগুলো গণনা করছি...</span></div>
+      <div class="l-step" id="ls4"><div class="ldot"></div><span>ভালোবাসা মিশিয়ে দিচ্ছি...</span></div>
+    </div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar" id="lbar"></div>
+    </div>
+    <div class="loader-footer">স্মৃতির পাতা • উসমান হাদী</div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+  <!-- BISMILLAH HERO -->
+  <section id="bismillah-section">
+    <div class="bismillah-glow-ring"></div>
+    <div class="bismillah-text">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+    <div class="bismillah-deco">
+      <div class="bismillah-line"></div>
+      <div class="bismillah-center">IN THE NAME OF ALLAH</div>
+      <div class="bismillah-line right"></div>
+    </div>
+  </section>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-photo-frame">
+      <div class="hero-ring"><div class="ring-jewel"></div></div>
+      <div class="hero-photo-placeholder">👶</div>
+    </div>
+    <h1 class="hero-name">উসমান হাদী</h1>
+    <div class="hero-name-ar">عثمان هادي</div>
+
+    <div class="hero-parents">
+      <strong>পিতা:</strong> হা: মোহাম্মদ জুনাঈদ আল ফয়সাল<br>
+      <strong>মাতা:</strong> ফারহানা আক্তার স্বপ্না
+    </div>
+
+    <div class="hero-birth-card">
+      <div class="birth-icon">🌙</div>
+      <div class="birth-info">
+        <div class="birth-date">১২ এপ্রিল ২০২৬ · রবিবার</div>
+        <div class="birth-time">সন্ধ্যা ৬:৩০ মিনিট · ২৬ শাওয়াল</div>
+      </div>
+    </div>
+
+    <div class="scroll-hint" style="margin-top:2rem;">
+      <span>নিচে স্ক্রল করুন</span>
+      <div class="s-arrow"></div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="div-line"></div><div class="div-icon">✦</div><div class="div-line"></div></div>
+
+  <!-- AGE COUNTER -->
+  <section class="section reveal">
+    <div class="sec-tag">লাইভ কাউন্টার</div>
+    <div class="sec-title">উসমান হাদী এখন <em>বড় হচ্ছে</em>...</div>
+    <div class="age-main">
+      <div class="age-big-num" id="ageDays">11</div>
+      <div class="age-big-label"><span>দিন</span> বয়স হয়েছে ছোট্ট সোনামণির 🌿</div>
+    </div>
+    <div class="age-sub-grid">
+      <div class="age-sub-card">
+        <div class="age-sub-num" id="ageHours">10</div>
+        <div class="age-sub-label">ঘণ্টা</div>
+      </div>
+      <div class="age-sub-card">
+        <div class="age-sub-num" id="ageMins">22</div>
+        <div class="age-sub-label">মিনিট</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="div-line"></div><div class="div-icon">✦</div><div class="div-line"></div></div>
+
+  <!-- GALLERY -->
+  <section class="section reveal">
+    <div class="sec-tag">স্মৃতির ফ্রেম</div>
+    <div class="sec-title">প্রথম <em>মুহূর্তগুলো</em></div>
+    <div class="polaroid-grid">
+      <div class="polaroid">
+        <div class="pol-img">👶</div>
+        <div class="pol-caption">জন্মের প্রথম দিন<br>❤️</div>
+      </div>
+      <div class="polaroid">
+        <div class="pol-img">🌿</div>
+        <div class="pol-caption">আম্মুর কোলে<br>নিরাপদ আমি</div>
+      </div>
+      <div class="polaroid">
+        <div class="pol-img">🌙</div>
+        <div class="pol-caption">প্রথম ঘুম<br>স্বপ্নের দেশে</div>
+      </div>
+      <div class="polaroid">
+        <div class="pol-img">⭐</div>
+        <div class="pol-caption">আব্বুর আদর<br>পৃথিবীর সেরা</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="div-line"></div><div class="div-icon">✦</div><div class="div-line"></div></div>
+
+  <!-- CALENDAR -->
+  <section class="section reveal">
+    <div class="sec-tag">বিশেষ দিন</div>
+    <div class="sec-title">এপ্রিল <em>২০২৬</em></div>
+    <div class="cal-wrap">
+      <div class="cal-month-title">— April 2026 —</div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <p style="text-align:center; font-size:0.75rem; color:var(--muted); margin-top:0.8rem; opacity:0.7;">
+      🟢 ১২ এপ্রিল — উসমান হাদীর জন্মদিন
+    </p>
+  </section>
+
+  <div class="divider"><div class="div-line"></div><div class="div-icon">✦</div><div class="div-line"></div></div>
+
+  <!-- COUNTDOWN -->
+  <section class="section reveal">
+    <div class="sec-tag">অপেক্ষার প্রহর</div>
+    <div class="sec-title">প্রথম <em>জন্মদিন</em> আসতে বাকি</div>
+    <div class="countdown-wrap">
+      <div class="cd-title">🎂 উসমান হাদীর ১ম জন্মদিন 🎂</div>
+      <div class="cd-grid">
+        <div class="cd-block">
+          <div class="cd-num" id="cdD">353</div>
+          <div class="cd-lbl">দিন</div>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <div class="cd-num" id="cdH">00</div>
+          <div class="cd-lbl">ঘণ্টা</div>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <div class="cd-num" id="cdM">00</div>
+          <div class="cd-lbl">মিনিট</div>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <div class="cd-num" id="cdS">00</div>
+          <div class="cd-lbl">সেকেন্ড</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="div-line"></div><div class="div-icon">✦</div><div class="div-line"></div></div>
+
+  <!-- DUA & MESSAGE -->
+  <section class="section reveal">
+    <div class="sec-tag">দোয়া ও বার্তা</div>
+    <div class="sec-title">আব্বু–আম্মুর <em>অন্তরের কথা</em></div>
+    <div class="dua-card">
+      <div class="dua-arabic">رَبِّ هَبْ لِي مِن لَّدُنكَ ذُرِّيَّةً طَيِّبَةً</div>
+      <div class="dua-trans">"হে রব, আমাকে তোমার কাছ থেকে পবিত্র সন্তান দাও।" — সূরা আলে-ইমরান: ৩৮</div>
+      <div class="dua-divider"></div>
+      <div class="msg-text">
+        উসমান হাদী, তুমি আমাদের দুআর জবাব,<br>
+        আল্লাহর রহমতের বিশেষ উপহার।<br><br>
+        তোমার প্রথম কান্না থেকে প্রথম হাসি —<br>
+        প্রতিটি মুহূর্ত আমাদের কাছে অমূল্য সম্পদ।<br><br>
+        আল্লাহ তোমাকে নেক, সুস্থ ও সুখী রাখুন।<br>
+        আমিন ❤️
+      </div>
+      <div class="msg-sign">— আব্বু জুনাঈদ ও আম্মু স্বপ্না · এপ্রিল ২০২৬</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  বিসমিল্লাহির রহমানির রহিম · <em>স্মৃতির পাতা</em> · উসমান হাদী<br>
+  <span style="font-size:0.65rem; opacity:0.5;">Pixel Frame Digital Edition</span>
+</footer>
+
+<script>
+// ── LOADER PARTICLES ──
+const pWrap = document.getElementById('particles');
+for(let i=0;i<60;i++){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = 2 + Math.random()*3;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%; top:${Math.random()*100}%;
+    --dur:${1.5+Math.random()*2}s; --delay:${Math.random()*3}s;
+  `;
+  pWrap.appendChild(p);
+}
+
+// ── LOADER STEPS ──
+const steps = ['ls1','ls2','ls3','ls4'];
+const bar = document.getElementById('lbar');
+steps.forEach((id,i)=>{
+  const el = document.getElementById(id);
+  setTimeout(()=>{ el.classList.add('show'); bar.style.width=((i+1)/steps.length*80)+'%'; }, 500+i*500);
+  setTimeout(()=>el.classList.add('done'), 800+i*500);
+});
+setTimeout(()=>{ bar.style.width='100%'; }, 2600);
+setTimeout(()=>{
+  const loader = document.getElementById('loader');
+  loader.classList.add('fade-out');
+  setTimeout(()=>loader.style.display='none', 1000);
+}, 3500);
+
+// ── BIRTH DATE ──
+const birth = new Date('2026-04-12T18:30:00');
+const nextBirth = new Date('2027-04-12T18:30:00');
+
+// ── AGE UPDATE ──
+function updateAge(){
+  const now = new Date();
+  const diff = now - birth;
+  if(diff < 0){ return; }
+  const d = Math.floor(diff/(86400000));
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  document.getElementById('ageDays').textContent = d;
+  document.getElementById('ageHours').textContent = h;
+  document.getElementById('ageMins').textContent = m;
+}
+updateAge();
+setInterval(updateAge, 60000);
+
+// ── CALENDAR (April 2026) ──
+(function(){
+  const grid = document.getElementById('calGrid');
+  // April 2026 starts on Wednesday = index 3 (Sun=0)
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{
+    const el = document.createElement('div');
+    el.className='cal-dh'; el.textContent=d; grid.appendChild(el);
+  });
+  const startDay = 3; // Wednesday
+  const total = 30;
+  const todayD = new Date().getDate();
+  const todayM = new Date().getMonth(); // 3 = April
+  for(let i=0;i<startDay;i++){
+    const el=document.createElement('div'); el.className='cal-d empty'; grid.appendChild(el);
+  }
+  for(let d=1;d<=total;d++){
+    const el=document.createElement('div'); el.className='cal-d'; el.textContent=d;
+    if(d===12) el.classList.add('birthday-day');
+    if(todayM===3 && d===todayD && d!==12) el.classList.add('today-day');
+    grid.appendChild(el);
+  }
+})();
+
+// ── COUNTDOWN ──
+function updateCD(){
+  const now = new Date();
+  const diff = nextBirth - now;
+  if(diff<=0){ document.getElementById('cdD').textContent='🎂'; return; }
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor((diff%86400000)/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  const s=Math.floor((diff%60000)/1000);
+  document.getElementById('cdD').textContent=d;
+  document.getElementById('cdH').textContent=String(h).padStart(2,'0');
+  document.getElementById('cdM').textContent=String(m).padStart(2,'0');
+  document.getElementById('cdS').textContent=String(s).padStart(2,'0');
+}
+updateCD(); setInterval(updateCD,1000);
+
+// ── SCROLL REVEAL ──
+const obs = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+</script>
+</body>
+</html>
